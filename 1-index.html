@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        header {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .button.blue {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .button.green {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .field {
+            margin: 10px 0;
+        }
+
+        .field input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+        }
+
+        .field p {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            background-color: #ffffff;
+        }
+
+        #checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin: 20px 0;
+        }
+
+        #checkbox-container label {
+            margin-left: 10px;
+            font-size: 16px;
+            color: #333333;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 14px;
+            background-color: #ffffff;
+            border-top: 2px solid #e0e0e0;
+        }
+    </style>
+    <script>
+        function trackLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+
+                        document.getElementById("coordinates").innerText =
+                            `Latitude: ${latitude}, Longitude: ${longitude}`;
+
+                        getAddressFromCoordinates(latitude, longitude);
+                    },
+                    (error) => {
+                        console.error("Erro ao obter localização:", error);
+                        let message = "Erro ao obter localização.";
+                        if (error.code === 1) {
+                            message = "Permissão de localização negada.";
+                        } else if (error.code === 2) {
+                            message = "Não foi possível determinar a localização.";
+                        } else if (error.code === 3) {
+                            message = "Tempo de espera esgotado ao tentar obter localização.";
+                        }
+                        document.getElementById("coordinates").innerText = message;
+                    }
+                );
+            } else {
+                alert("Geolocalização não é suportada neste navegador.");
+            }
+        }
+
+        function getAddressFromCoordinates(latitude, longitude) {
+            const apiUrl = `https://us1.locationiq.com/v1/reverse?key=pk.73c7ec951f7e0c38e842f740a1a63917&lat=${latitude}&lon=${longitude}&format=json`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const address = `
+                        Rua: ${data.address.road || "N/A"},
+                        Bairro: ${data.address.residential || "N/A"},
+                        Cidade: ${data.address.city || "N/A"},
+                        Estado: ${data.address.state || "N/A"},
+                        CEP: ${data.address.postcode || "N/A"},
+                        País: ${data.address.country || "N/A"}
+                    `;
+                    document.getElementById("address").innerText = address;
+                })
+                .catch(error => {
+                    console.error("Erro ao obter endereço:", error);
+                    document.getElementById("address").innerText =
+                        "Erro ao obter endereço.";
+                });
+        }
+
+        window.onload = function () {
+            trackLocation();
+        };
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Monitory</h1>
+    </header>
+
+    <div class="container">
+        <button class="button blue" onclick="trackLocation()">Ver no Google Mapas</button>
+
+        <div class="field">
+            <p id="coordinates">Latitude: -, Longitude: -</p>
+        </div>
+
+        <div class="field">
+            <p id="address">Endereço: -</p>
+        </div>
+
+        <h3>Buscar Endereço por CEP</h3>
+        <div class="field">
+            <input type="text" id="cepInput" placeholder="Digite o CEP">
+            <button class="button green" onclick="searchByCep()">Buscar</button>
+        </div>
+        <div class="field">
+            <p id="cepResult">Resultado do CEP aparecerá aqui.</p>
+        </div>
+
+        <div id="checkbox-container">
+            <input type="checkbox" id="trackingCheckbox">
+            <label id="trackingStatus">Localização</label>
+        </div>
+    </div>
+
+    <footer>
+        <p>2024 Growcet. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
